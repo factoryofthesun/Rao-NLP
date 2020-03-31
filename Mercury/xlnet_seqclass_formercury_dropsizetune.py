@@ -284,9 +284,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 path = str(Path(__file__).parent / "../Plots")
 
-def plotResults(train_loss_set, test_loss_set, train_acc_set, test_acc_set):
+def plotResults(train_loss_set, train_acc_set, test_loss_set, test_acc_set):
     loss_fname = "loss_maxlen{}_dp{}_summdp{}.png".format(size, dropout, summary_dropout)
-    acc_fname = "accuracy_maxlen{}_dp{}_summdp{}.png".format(size, dropout_summary_dropout)
+    acc_fname = "accuracy_maxlen{}_dp{}_summdp{}.png".format(size, dropout, summary_dropout)
 
     plt.plot(train_loss_set, 'r--')
     plt.plot(test_loss_set, 'b-')

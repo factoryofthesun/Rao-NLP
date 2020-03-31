@@ -66,54 +66,51 @@ tokenizer = XLNetTokenizer.from_pretrained('xlnet-large-cased', do_lower_case=Tr
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 #Encode abstracts, set truncation and padding
 #Sentences need to be end-padded for XLNet
-def preProcess(max_len, abstracts, labels):
-    abstracts = [ab + " [SEP] [CLS]" for ab in abstracts]
+abstracts = [ab + " [SEP] [CLS]" for ab in abstracts]
 
-    #Tokenize
-    abs_tokens = [tokenizer.tokenize(ab) for ab in abstracts]
+#Tokenize
+abs_tokens = [tokenizer.tokenize(ab) for ab in abstracts]
 
-    #Encode tokens
-    encoded_ids = [tokenizer.convert_tokens_to_ids(x) for x in abs_tokens]
-    MAX_LEN = max([len(x) for x in encoded_ids]) #Check max tokenized length
-    print("Maximum id vector found: {}".format(MAX_LEN))
+#Encode tokens
+encoded_ids = [tokenizer.convert_tokens_to_ids(x) for x in abs_tokens]
+MAX_LEN = max([len(x) for x in encoded_ids]) #Check max tokenized length
+print("Maximum id vector found: {}".format(MAX_LEN))
 
-    #If longer than 256 ids, take first and last 128
-    truncated_ids = [x[:max_len//2] + x[-max_len//2:] if len(x) > max_len else x for x in encoded_ids ]
+#If longer than 256 ids, take first and last 128
+truncated_ids = [x[:128] + x[-128:] if len(x) > 256 else x for x in encoded_ids ]
 
-    for x in truncated_ids:
-        if len(x) > max_len:
-            print("Found inconsistent length {}".format(len(x)))
-            print(x)
+for x in truncated_ids:
+    if len(x) > 256:
+        print("Found inconsistent length {}".format(len(x)))
+        print(x)
 
-    #Need standardized input lengths - pad to maximum length encoded vector
-    input_ids = pad_sequences(truncated_ids, maxlen = max_len, dtype = "long", truncating ="pre", padding = "post", value = 0)
+#Need standardized input lengths - pad to maximum length encoded vector
+input_ids = pad_sequences(truncated_ids, maxlen = 256, dtype = "long", truncating ="pre", padding = "post", value = 0)
 
-    #Create attention masks
-    attention_masks = []
-    for seq in input_ids:
-      seq_mask = [float(i>0) for i in seq]
-      attention_masks.append(seq_mask)
+#Create attention masks
+attention_masks = []
+for seq in input_ids:
+  seq_mask = [float(i>0) for i in seq]
+  attention_masks.append(seq_mask)
 
-    #Split out test and training sets
-    train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(input_ids, labels,
-                                                                random_state=2020, test_size=0.1)
-    train_masks, validation_masks, _, _ = train_test_split(attention_masks, input_ids,
-                                                 random_state=2020, test_size=0.1)
+#Split out test and training sets
+train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(input_ids, labels,
+                                                            random_state=2020, test_size=0.1)
+train_masks, validation_masks, _, _ = train_test_split(attention_masks, input_ids,
+                                             random_state=2020, test_size=0.1)
 
-    #Convert to tensors
-    train_inputs = torch.tensor(train_inputs)
-    validation_inputs = torch.tensor(validation_inputs)
-    train_labels = torch.tensor(train_labels)
-    validation_labels = torch.tensor(validation_labels)
-    train_masks = torch.tensor(train_masks)
-    validation_masks = torch.tensor(validation_masks)
-
-    return train_inputs, validation_inputs, train_labels, validation_labels, train_masks, validation_masks
+#Convert to tensors
+train_inputs = torch.tensor(train_inputs)
+validation_inputs = torch.tensor(validation_inputs)
+train_labels = torch.tensor(train_labels)
+validation_labels = torch.tensor(validation_labels)
+train_masks = torch.tensor(train_masks)
+validation_masks = torch.tensor(validation_masks)
 
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
 #Create dataloaders
-def loadData(batch_size, train_inputs, validation_inputs, train_labels, validation_labels, train_masks, validation_masks):
+def loadData(batch_size):
     train_data = TensorDataset(train_inputs, train_masks, train_labels)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
@@ -129,7 +126,6 @@ def loadData(batch_size, train_inputs, validation_inputs, train_labels, validati
     print("Testing data has {} positive polarity out of {} samples".format(test_pos_count, len(validation_data)))
 
     return train_dataloader, validation_dataloader
-
 #Load XLNet sequence classification model
 from transformers import XLNetForSequenceClassification, AdamW
 
@@ -284,9 +280,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 path = str(Path(__file__).parent / "../Plots")
 
-def plotResults(train_loss_set, test_loss_set, train_acc_set, test_acc_set):
-    loss_fname = "loss_maxlen{}.png".format(size)
-    acc_fname = "accuracy_max{}.png".format(size)
+def plotResults(train_loss_set, train_acc_set, test_loss_set, test_acc_set):
+    loss_fname = "loss_bsize{}_warmup{}.png".format(bsize, warmup)
+    acc_fname = "accuracy_bsize{}_warmup{}.png".format(bsize, warmup)
 
     plt.plot(train_loss_set, 'r--')
     plt.plot(test_loss_set, 'b-')
@@ -308,13 +304,10 @@ def plotResults(train_loss_set, test_loss_set, train_acc_set, test_acc_set):
 
 #==============Run hyperparams loop===============
 
-for size in [64, 128, 256, 512]:
-        print("Testing input ids of size {}".format(size))
-        #Change max size during preprocessing
-        train_inputs, validation_inputs, train_labels, validation_labels, train_masks, validation_masks = preProcess(size, abstracts, labels)
-
+for bsize in [5,10,15]:
+    for warmup in [.1, .5, .8]:
         #Mess with batch size
-        train_dataloader, validation_dataloader = loadData(10, train_inputs, validation_inputs, train_labels, validation_labels, train_masks, validation_masks)
+        train_dataloader, validation_dataloader = loadData(bsize)
 
         model = loadModel()
 
@@ -334,10 +327,10 @@ for size in [64, 128, 256, 512]:
 
         epochs = 10 #Try more epochs with higher dropout since validation performance is low
         total_steps = len(train_dataloader) * epochs
-
+        n_warmup = round(total_steps * warmup)
         #Create learning rate scheduler
         scheduler = get_linear_schedule_with_warmup(optimizer,
-                                                    num_warmup_steps = 0,
+                                                    num_warmup_steps = n_warmup,
                                                     num_training_steps = total_steps)
 
         train_loss_set, train_acc_set, test_loss_set, test_acc_set = train(model, train_dataloader, validation_dataloader)

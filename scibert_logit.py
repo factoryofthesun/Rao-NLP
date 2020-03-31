@@ -22,7 +22,10 @@ import datetime
 import random
 
 #Load data and apply polarity rule
-mturk_abstracts = pd.read_csv("Data/Train/mturk_train.csv")
+from pathlib import Path
+
+data_path = str(Path(__file__).parent / "../Data")
+mturk_abstracts = pd.read_csv(data_path + "/mturk_train.csv")
 
 #Polarity rule: If >=2 positive ratings, then label positive
 mturk_abstracts['polarity'] = (mturk_abstracts['count_pos'] >= 2).astype(int)
@@ -67,7 +70,7 @@ with torch.no_grad():
     last_hidden_states = model(input_ids = input_tensor, attention_mask = attention_mask_tensor)
 
 features = last_hidden_states[0][:,0,:].numpy()
-train_feat, test_feat, train_labels, test_labels = train_test_split(features, labels)
+train_feat, test_feat, train_labels, test_labels = train_test_split(features, labels, random_state = 2020)
 
 #Train and test logistic model
 from sklearn.linear_model import LogisticRegression
@@ -82,7 +85,7 @@ grid_search.fit(train_feat, train_labels)
 print('best parameters: ', grid_search.best_params_)
 print('best scrores: ', grid_search.best_score_)
 
-model = LogisticRegression()
+model = LogisticRegression(random_state = 2020)
 model.fit(train_feat, train_labels)
 
 print(model.score(test_feat, test_labels))

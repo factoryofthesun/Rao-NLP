@@ -144,7 +144,7 @@ def getTokens(maxlen):
     for i in range(len(train_input_split)):
         assert len(train_input_split[i]) == len(train_attention_split[i])
 
-    return train_input_split, test_input_split, train_attention_split, test_attention_split
+    return train_input_split, test_input_split, train_attention_split, test_attention_split, train_label_tensor, test_label_tensor
 """Transformers BERT hidden state output structure:
 
 Index 0 = initial input embedding
@@ -156,81 +156,6 @@ Different combinations of layer outputs alter performance...see [this embeddings
 We will try: last layer, second-to-last layer, concat last 4 layers, sum last 4, sum all 12 layers
 """
 
-#Test getting full BERT embeddings
-'''print("Computing embeddings...")
-x_train_batched = []
-x_test_batched = []
-t0 = time.time()
-
-bert_model.eval()
-
-for i in range(len(train_input_split)):
-  with torch.no_grad():
-    x_train = bert_model(input_ids=train_input_split[i], attention_mask=train_attention_split[i])
-    if i < len(test_input_split):
-      x_test = bert_model(input_ids=test_input_split[i], attention_mask=test_attention_split[i])
-      x_test_batched.append(x_test)
-    x_train_batched.append(x_train)
-  #Get process memory for each loop
-  process = psutil.Process(os.getpid())
-  print("Gen RAM Free: " + humanize.naturalsize(psutil.virtual_memory().available), " |     Proc size: " + humanize.naturalsize(process.memory_info().rss))
-
-
-print("Embeddings time elapsed {}".format(format_time(time.time() - t0)))
-'''
-#Below code is less RAM-efficient for some reason...
-'''#Keep a dictionary of the embedding transformations to save memory
-x_train_dict = {"last":[],"secondtolast":[],"sum4":[],"sumall":[],"concat4":[]}
-x_test_dict = {"last":[],"secondtolast":[],"sum4":[],"sumall":[],"concat4":[]}
-
-for i in range(len(train_input_split)):
-  with torch.no_grad():
-    x_train = bert_model(input_ids=train_input_split[i], attention_mask=train_attention_split[i])
-    x_train_dict["last"].append(x_train[0])
-    train_stacked = torch.stack(x_train[2], dim = 0)
-    x_train_dict["secondtolast"].append(train_stacked[-2])
-    train_sum4 = torch.sum(train_stacked[-4:], dim = 0)
-    x_train_dict["sum4"].append(train_sum4)
-    train_sumall = torch.sum(train_stacked[-12:], dim = 0)
-    x_train_dict["sumall"].append(train_sumall)
-    last_four_train = [train_stacked[-4],train_stacked[-3],train_stacked[-2],train_stacked[-1]]
-    train_concat = torch.cat(last_four_train, dim = 1)
-    x_train_dict["concat4"].append(train_concat)
-    if i < len(test_input_split):
-      x_test = bert_model(input_ids=test_input_split[i], attention_mask=test_attention_split[i])
-      x_test_dict["last"].append(x_test[0])
-      test_stacked = torch.stack(x_test[2], dim = 0)
-      x_test_dict["secondtolast"].append(test_stacked[-2])
-      test_sum4 = torch.sum(test_stacked[-4:], dim = 0)
-      x_test_dict["sum4"].append(test_sum4)
-      test_sumall = torch.sum(test_stacked[-12:], dim = 0)
-      x_test_dict["sumall"].append(test_sumall)
-      last_four_test = [test_stacked[-4],test_stacked[-3],test_stacked[-2],test_stacked[-1]]
-      test_concat = torch.cat(last_four_test, dim = 1)
-      x_test_dict["concat4"].append(test_concat)
-  printm()
-print("Embeddings took {}".format(format_time(time.time()-t0)))'''
-
-'''#Create generator functions instead
-def bertTrainProcess():
-  for i in range(len(train_input_split)):
-    input_cuda = train_input_split[i]
-    attention_cuda = train_attention_split[i]
-    with torch.no_grad():
-      x_out = bert_model(input_ids=input_cuda, attention_mask=attention_cuda)
-    yield x_out
-
-def bertTestProcess():
-  for i in range(len(test_input_split)):
-    input_cuda = test_input_split[i]
-    attention_cuda = test_attention_split[i]
-    with torch.no_grad():
-      x_out = bert_model(input_ids=input_cuda, attention_mask=attention_cuda)
-    yield x_out
-
-x_train_batched = bertTrainProcess()
-x_test_batched = bertTestProcess()
-'''
 import os
 import psutil
 import humanize
@@ -354,7 +279,7 @@ class KimCNN(nn.Module):
         return output
 
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-def createDataLoaders(x_train, x_test, batch_size = 32):
+def createDataLoaders(x_train, x_test, train_label_tensor, test_label_tensor, batch_size = 32):
   batch_size = batch_size
 
   #Create DataLoaders for training/validation
@@ -505,8 +430,8 @@ def train(model):
   print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-t_init)))
 
   #Plot results
-  loss_fname = "dropout{}_strat{}_maxlen{}_loss.png".format(dropout, strat, maxlen)
-  acc_fname = "dropout{}_strat{}_maxlen{}_acc.png".format(dropout, strat, maxlen)
+  loss_fname = "dropout{}_maxlen{}_bsize{}_loss.png".format(dropout, maxlen, bsize)
+  acc_fname = "dropout{}_maxlen{}_bsize{}_acc.png".format(dropout, maxlen, bsize)
 
   plt.plot(train_loss, 'r--')
   plt.plot(test_loss, 'b-')
@@ -536,14 +461,14 @@ loss_fn = nn.BCELoss()
 from transformers import get_linear_schedule_with_warmup
 
 #Loop through different parameters configs and fine-tune
-for strat in ["last", "secondtolast", "sum4", "sumall", "concat4"]:
-  for d in [0.5, 0.7]:
-      for maxlen in [128, 256]:
-          train_input_split, test_input_split, train_attention_split, test_attention_split = getTokens(maxlen)
+for bsize in [64, 128]:
+  for d in [0.3, 0.5]:
+      for maxlen in [256, 512]:
+          strat = 'concat4'
+          train_input_split, test_input_split, train_attention_split,test_attention_split, train_label_tensor, test_label_tensor = getTokens(maxlen)
           t0 = time.time()
           print("Running embedding strategy {}".format(strat))
-          x_train_list = getEmbeddings(strat)
-          x_test_list = getEmbeddings(strat)
+          x_train_list, x_test_list = getEmbeddings(strat)
           print("Embeddings took {}".format(format_time(time.time() - t0)))
 
           x_train = torch.cat(x_train_list, dim=0)
@@ -552,11 +477,11 @@ for strat in ["last", "secondtolast", "sum4", "sumall", "concat4"]:
           print("Input set length:", len(x_train))
           print("Test set length:", len(x_test))
 
-          train_dataloader, test_dataloader = createDataLoaders(32, x_train, x_test)
+          train_dataloader, test_dataloader = createDataLoaders(x_train, x_test, train_label_tensor, test_label_tensor, bsize)
           embed_num = x_train.shape[1]
           embed_dim = x_train.shape[2]
           class_num = 1
-          kernel_num = 3
+          kernel_num = 8
           kernel_sizes = [2,3,8]
           dropout = d
           static = False

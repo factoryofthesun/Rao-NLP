@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "direct-raceway-272923",
+  "private_key_id": "25c38a10b1499a2da299e5f313e52e5349cceedc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDN7JhbGTTbSFsp\noeoMM1txb3RtgGd/64RKzxMU8AyXXR9IlgcClkrB9fcyTkcDF7OVjufjXRUzfzPE\nSbO2V8LlfMGgDBVaPUxFN/cqqGYriQZUPCAULo2MqbQ2BwBE1ImquC8j9DdSSI4V\nuoO5NOeqpKeM7XV+8xa1lO8POWZMx4s+Rj9Yj+//qDZ2hmeiM8nZ3nIslWiPuJ4p\nM12nfj4Dv2knGRZSCnCJuR9oL8DKXAykH4zbt/QifJd1eby0NedwwakXXZnjpqXh\nxGY6CSWpSGmIIbBBqyhnlNNc2Vr2smA7NFmrxEjxb6J9ailciEHE5o4QalxZuBTo\nha6lyh5XAgMBAAECggEACGeUglIBjRpOFOFrDuDBEIdW2P9JeiLv19PNeL3MGG4b\nEEMwpGOOR+NU7wSF3nOcXJ7OtRdqqEWT+c9zmnNzh2/zlnzXxEKbNySvyFnDgxmz\nx0KwS9KTQWn4anoXrIzWKkBxNXD1bxIksRtXM/sboiSCmCcQSW781CAbhQ4NMFX5\nMptSx+epbyDJvb190HGseiYgGK3kpP3SGbSjCINiICIRVcce1OQQvzEfm0GzwmFG\ndKvc0LLpU6QwrpsfCAE5y2UJ0VnOtrljPjF7X7nnCQ9bod0Y+bBTMmPlB7tpFN1G\naBQM14PT5Z7lS0gEBIQfEy8GtGsKk3daFElDe9QhbQKBgQDrXoHnF7/GgO5CNx/0\nNqDaNIZYeZvkZ3pK3Jd0MBbPv649nEt1tb6k4eNNnM46cq1zcLAFF+5CAHnui+3Y\nF9spUeVLgfC93PDzEGKHdcHdUDuGUM+kroTXN/wF4cU6UQGbUHHrkf1634NP5K7W\nebw2X7Wik1oFaXh9IGUfr6AJ1QKBgQDf+V3WY5N/06kzstkqk9X4a4cBVBkl9fPr\noVW0PTC4kJUKkev0vF4kYhfgZrcyZlJmi5E0WbDnwWywJEgOOy/3BdFKhEgeKBoM\n4uQe7ykcIoYIulpnL88fhn1wJ4g84uim7UzEHndH7QAHzPlYWqgZDVq4+gBnq6ZA\nCYam4SVRewKBgApsFuh6vr01fFdmRX305U6EQOauC98jTeD+v54fewMcA8UqpJTD\nxXtbnUsUhHVGGrQf60tucdhuWPfdLl0BQW0k+ThMurJNlEXPFe3Vow3/vYMHFQq/\nx5YYHorMIoWgjKep+kFqJ4VHXHMvNya8IT9vIYXfbH8M2o7/3jp29mk5AoGBANQZ\nI8HYfl+4oyzwGzN02FXuDeU2LLKEHb9wAucyYycE0/80fIxAra4qro2095tkxneR\nh6pZnWt7AmAzm4DOj/ePrMiySFE2jKTTYE/jD70y/FbbkqzQ24XxKGzDIwL1pngd\nlGrMpwyX5UV92ErRXwqKWPV+2k9Sf5d47eiuoVZtAoGBAMdOWgrO+m8ROuGM5m5a\n9ZenZpuLLrAU6HrjDYL7WAHFd0hUBvQvMdjHQ4NVctuSXtw4I3ZNX/lkDYSUT0L/\ng8RwsHXAs4rafSEcsE5s9NYb+M+uzikHVe7sMqkAg3MFt2WpKD5JXbFO0x1Tlv+4\niRH/VpescoVLLS+HF8peBWnt\n-----END PRIVATE KEY-----\n",
+  "client_email": "naive-mturk-sentiment@direct-raceway-272923.iam.gserviceaccount.com",
+  "client_id": "109082321979819418144",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/naive-mturk-sentiment%40direct-raceway-272923.iam.gserviceaccount.com"
+}

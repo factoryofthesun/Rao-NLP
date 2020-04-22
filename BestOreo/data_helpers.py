@@ -116,7 +116,7 @@ def load_vocab(model_path):
 def save_model(model, model_path):
     # serialize model to JSON
     model_json = model.to_json()
-    with open(model_path+"/model.json", "w") as json_file:
+    with open(model_path, "w") as json_file:
         json_file.write(model_json)
 
 

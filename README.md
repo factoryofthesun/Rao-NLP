@@ -1,4 +1,5 @@
 # Rao-NLP
+**Repo has been deprecated - for updated machine learning code please refer to https://github.com/factoryofthesun/NutritionBiasinScience**
 
 Problem statement: Can we train an NLP model on a relatively small training set (~1400 abstracts) to accurately identify "positive" <sup>1</sup> results in food science paper abstracts? 
 

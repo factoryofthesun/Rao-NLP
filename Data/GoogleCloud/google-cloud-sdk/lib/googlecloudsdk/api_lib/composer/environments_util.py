@@ -52,7 +52,7 @@ def Create(environment_ref,
            services_ipv4_cidr_block=None,
            private_environment=None,
            private_endpoint=None,
-           master_ipv4_cidr=None,
+           main_ipv4_cidr=None,
            web_server_access_control=None,
            release_track=base.ReleaseTrack.GA):
   """Calls the Composer Environments.Create method.
@@ -98,8 +98,8 @@ def Create(environment_ref,
     private_environment: bool or None, create env cluster nodes with no public
         IP addresses.
     private_endpoint: bool or None, managed env cluster using the private IP
-        address of the master API endpoint.
-    master_ipv4_cidr: IPv4 CIDR range to use for the master network.
+        address of the main API endpoint.
+    main_ipv4_cidr: IPv4 CIDR range to use for the main network.
     web_server_access_control: [{string: string}], List of IP ranges with
         descriptions to allow access to the web server.
     release_track: base.ReleaseTrack, the release track of command. Will dictate
@@ -163,10 +163,10 @@ def Create(environment_ref,
     if private_environment:
       # Adds a PrivateClusterConfig, if necessary.
       private_cluster_config = None
-      if private_endpoint or master_ipv4_cidr:
+      if private_endpoint or main_ipv4_cidr:
         private_cluster_config = messages.PrivateClusterConfig(
             enablePrivateEndpoint=private_endpoint,
-            masterIpv4CidrBlock=master_ipv4_cidr)
+            mainIpv4CidrBlock=main_ipv4_cidr)
 
       config.privateEnvironmentConfig = messages.PrivateEnvironmentConfig(
           enablePrivateEnvironment=private_environment,
